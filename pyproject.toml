@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "real-time-simulator"
+version = "0.1.0"
+description = ""
+authors = ["Carlos Cerqueira <ce.cesc01@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+ruff = "^0.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
