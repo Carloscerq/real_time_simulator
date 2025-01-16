@@ -80,10 +80,18 @@ class GUI:
         self.quantum_input.setPlaceholderText("Quantum (ex: 4)")
         self.layout.addWidget(self.quantum_input)
 
-        # Botão de iniciar
+        # Botões de controle
+        control_layout = QHBoxLayout()
+
         start_button = QPushButton("Iniciar Escalonamento")
         start_button.clicked.connect(self.start_schedule)
-        self.layout.addWidget(start_button)
+        control_layout.addWidget(start_button)
+
+        clear_button = QPushButton("Limpar Simulação")
+        clear_button.clicked.connect(self.clear_simulation)
+        control_layout.addWidget(clear_button)
+
+        self.layout.addLayout(control_layout)
 
     def add_task(self):
         task_text = self.task_input.text()
@@ -122,6 +130,13 @@ class GUI:
                 threading.Thread(target=self.run_scheduler, args=(scheduler.schedule,)).start()
             except ValueError:
                 pass  # Ignora valores de quantum inválidos
+
+    def clear_simulation(self):
+        self.tasks.clear()
+        self.update_task_list()
+        ax = self.canvas.figure.subplots()
+        ax.clear()
+        self.canvas.draw()
 
     def run_scheduler(self, scheduler_callback):
         for schedule in scheduler_callback():
