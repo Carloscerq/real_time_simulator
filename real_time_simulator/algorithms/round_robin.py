@@ -1,4 +1,4 @@
-from real_time_simulator.algorithms.Algorithm import Algorithm
+from real_time_simulator.algorithms.base.algorithm import Algorithm
 
 class RoundRobin(Algorithm):
     def schedule(self):
