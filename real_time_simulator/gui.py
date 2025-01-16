@@ -1,5 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QComboBox, QHBoxLayout
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QComboBox, QHBoxLayout, QListWidget, QListWidgetItem
+)
+from PyQt6.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import threading
@@ -25,6 +28,7 @@ class GUI:
         self.current_window = QWidget()
         self.current_window.setWindowTitle(window_title)
         self.current_window.setGeometry(*window_geometry)
+        self.current_window.setMinimumSize(800, 600)
         self.pos_x, self.pos_y, self.width, self.height = window_geometry
 
         self.algorithms = algorithms or {}
@@ -37,13 +41,15 @@ class GUI:
     def setup_ui(self):
         # Título principal
         title = QLabel(f"<h1>Simulador de Tempo Real</h1>")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(title)
 
         # Canvas para o gráfico
         self.canvas = FigureCanvas(plt.figure())
-        self.layout.addWidget(self.canvas)
+        self.layout.addWidget(self.canvas, stretch=3)
 
-        # Área de entrada de tarefas
+        # Área de entrada de tarefas e lista de tarefas
+        task_layout = QVBoxLayout()
         input_layout = QHBoxLayout()
         self.task_input = QLineEdit()
         self.task_input.setPlaceholderText("Tarefa,Tempo de execução (ex: T1,10)")
@@ -53,7 +59,16 @@ class GUI:
         add_task_button.clicked.connect(self.add_task)
         input_layout.addWidget(add_task_button)
 
-        self.layout.addLayout(input_layout)
+        task_layout.addLayout(input_layout)
+
+        self.task_list = QListWidget()
+        task_layout.addWidget(self.task_list)
+
+        remove_task_button = QPushButton("Remover Tarefa Selecionada")
+        remove_task_button.clicked.connect(self.remove_task)
+        task_layout.addWidget(remove_task_button)
+
+        self.layout.addLayout(task_layout, stretch=2)
 
         # Seleção de algoritmo
         self.algorithm_selector = QComboBox()
@@ -78,8 +93,22 @@ class GUI:
                 burst_time = int(burst_time)
                 self.tasks.append((task_id.strip(), burst_time))
                 self.task_input.clear()
+                self.update_task_list()
             except ValueError:
                 pass  # Ignora entradas inválidas
+
+    def remove_task(self):
+        selected_item = self.task_list.currentItem()
+        if selected_item:
+            task_text = selected_item.text()
+            task_id = task_text.split(":")[0].strip()
+            self.tasks = [task for task in self.tasks if task[0] != task_id]
+            self.update_task_list()
+
+    def update_task_list(self):
+        self.task_list.clear()
+        for task_id, burst_time in self.tasks:
+            self.task_list.addItem(f"{task_id}: {burst_time} unidades de tempo")
 
     def start_schedule(self):
         if not self.running and self.tasks:
@@ -114,5 +143,5 @@ class GUI:
         self.canvas.draw()
 
     def run(self):
-        self.current_window.show()
+        self.current_window.showMaximized()
         sys.exit(self.app.exec())
